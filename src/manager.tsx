@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { AddonPanel } from '@storybook/components';
-import { addons, types, useStorybookApi } from '@storybook/manager-api';
+import { AddonPanel } from 'storybook/internal/components';
+import { addons, types, useStorybookApi } from 'storybook/internal/manager-api';
 import { DesignTokensPanel } from './components/DesignTokensPanel';
 import { ADDON_ID, EVENTS, PANEL_ID, PANEL_TITLE } from './constants';
 import type { StoryTokenPayload } from './types';
@@ -14,20 +14,20 @@ function PanelContainer({ active }: { active: boolean }) {
     const onUpdate = (payload: StoryTokenPayload) => {
       setTokensByStory((prev) => ({ ...prev, [payload.storyId]: payload }));
     };
+
     channel.on(EVENTS.UPDATE, onUpdate);
     return () => channel.off(EVENTS.UPDATE, onUpdate);
   }, []);
 
-  const currentStoryId = api.getCurrentStoryData()?.id;
-  const params = api.getCurrentStoryData()?.parameters?.designTokens ?? {};
-  const payload = currentStoryId ? tokensByStory[currentStoryId] : undefined;
+  const currentStoryData = api.getCurrentStoryData();
+  const payload = currentStoryData ? tokensByStory[currentStoryData.id] : undefined;
 
   return (
     <AddonPanel active={active}>
       <DesignTokensPanel
         allTokens={payload?.allTokens ?? []}
         usedTokenNames={payload?.usedTokenNames ?? []}
-        showUnusedByDefault={Boolean(params.showUnusedByDefault)}
+        showUnusedByDefault={Boolean(currentStoryData?.parameters?.designTokens?.showUnusedByDefault)}
       />
     </AddonPanel>
   );

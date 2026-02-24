@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { EmptyTabContent, Form } from '@storybook/components';
+import { EmptyTabContent, Form } from 'storybook/internal/components';
 import type { ParsedToken } from '../types';
 
 interface Props {
@@ -24,11 +24,11 @@ export function DesignTokensPanel({ allTokens, usedTokenNames, showUnusedByDefau
   const visibleTokens = useMemo(() => {
     const base = showAllTokens
       ? allTokens
-      : allTokens.filter((token) => usedTokenNames.includes(token.name) || showUnused);
+      : showUnused
+        ? allTokens
+        : allTokens.filter((token) => usedTokenNames.includes(token.name));
 
-    if (!query.trim()) {
-      return base;
-    }
+    if (!query.trim()) return base;
 
     const needle = query.toLowerCase();
     return base.filter(
@@ -56,12 +56,13 @@ export function DesignTokensPanel({ allTokens, usedTokenNames, showUnusedByDefau
           onChange={(event) => setQuery(event.currentTarget.value)}
         />
       </div>
+
       <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
         <label>
-          <input type="checkbox" checked={showAllTokens} onChange={() => setShowAllTokens((v) => !v)} /> All theme tokens page
+          <input type="checkbox" checked={showAllTokens} onChange={() => setShowAllTokens((value) => !value)} /> Show all tokens page
         </label>
         <label>
-          <input type="checkbox" checked={showUnused} onChange={() => setShowUnused((v) => !v)} /> Show not used tokens
+          <input type="checkbox" checked={showUnused} onChange={() => setShowUnused((value) => !value)} /> Show unused tokens
         </label>
       </div>
 

@@ -1,5 +1,5 @@
-import { addons } from '@storybook/preview-api';
-import type { Decorator, Preview } from '@storybook/preview-api';
+import { addons } from 'storybook/internal/preview-api';
+import type { Decorator, Preview } from 'storybook/internal/types';
 import { EVENTS } from './constants';
 import {
   enrichSemanticReferences,
@@ -30,8 +30,8 @@ const inferComponentCssPath = (context: Parameters<Decorator>[1]): string | unde
   const fileName =
     (context.component as { __docgenInfo?: { fileName?: string } } | undefined)?.__docgenInfo?.fileName ??
     (context.parameters.fileName as string | undefined);
-  if (!fileName) return undefined;
 
+  if (!fileName) return undefined;
   return fileName.replace(/\.[^.]+$/, '.module.css');
 };
 
@@ -61,6 +61,7 @@ const emitDesignTokens: Decorator = (Story, context) => {
       usedTokenNames,
       componentCssPath
     };
+
     channel.emit(EVENTS.UPDATE, payload);
   })().catch(() => {
     channel.emit(EVENTS.UPDATE, {

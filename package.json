@@ -1,6 +1,6 @@
 {
   "name": "storybook-design-tokens-panel",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Storybook v10 addon panel for semantic and primitive design tokens",
   "type": "module",
   "main": "dist/index.js",
@@ -22,12 +22,6 @@
     "storybook": "^10.0.0",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
-  },
-  "dependencies": {
-    "@storybook/components": "^10.0.0",
-    "@storybook/manager-api": "^10.0.0",
-    "@storybook/preview-api": "^10.0.0",
-    "@storybook/theming": "^10.0.0"
   },
   "devDependencies": {
     "typescript": "^5.6.3",
