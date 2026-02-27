@@ -1,7 +1,18 @@
-import { createRequire } from 'node:module';
+// You can use presets to augment the Storybook configuration
+// You rarely want to do this in addons,
+// so often you want to delete this file and remove the reference to it in package.json#exports and package.json#bunder.nodeEntries
+// Read more about presets at https://storybook.js.org/docs/addons/writing-presets
 
-const require = createRequire(import.meta.url);
+export const viteFinal = async (config: Record<string, any>) => {
+  const { mergeConfig } = await import('vite');
+  const { cssModuleTracker } = await import('./cssModuleTracker.js');
 
-export const managerEntries = (entry: string[] = []): string[] => [...entry, require.resolve('./manager')];
+  return mergeConfig(config, {
+    plugins: [cssModuleTracker()],
+  });
+};
 
-export const previewAnnotations = (entry: string[] = []): string[] => [...entry, require.resolve('./preview')];
+export const webpack = async (config: unknown) => {
+  console.log('This addon is augmenting the Webpack config');
+  return config;
+};

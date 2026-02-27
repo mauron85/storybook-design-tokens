@@ -1,31 +1,119 @@
 {
-  "name": "storybook-design-tokens-panel",
-  "version": "0.1.1",
-  "description": "Storybook v10 addon panel for semantic and primitive design tokens",
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./preset": "./dist/preset.js",
-    "./manager": "./dist/manager.js",
-    "./preview": "./dist/preview.js"
-  },
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "check": "tsc -p tsconfig.json --noEmit"
-  },
-  "peerDependencies": {
-    "storybook": "^10.0.0",
-    "react": "^18.0.0 || ^19.0.0",
-    "react-dom": "^18.0.0 || ^19.0.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.6.3",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1"
-  }
+	"name": "storybook-design-tokens-panel",
+	"version": "0.1.4",
+	"description": "Storybook v10 addon panel for semantic and primitive design tokens",
+	"type": "module",
+	"license": "MIT",
+	"author": "Marián Hello",
+	"keywords": [
+		"storybook",
+		"storybook-addon",
+		"design-tokens",
+		"design-system",
+		"css-variables",
+		"style-dictionary",
+		"theme"
+	],
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./preview": {
+			"types": "./dist/preview.d.ts",
+			"default": "./dist/preview.js"
+		},
+		"./preset": "./dist/preset.js",
+		"./manager": "./dist/manager.js",
+		"./manager-helpers": "./dist/manager-helpers.js",
+		"./package.json": "./package.json"
+	},
+	"scripts": {
+		"prebuild": "node -e \"fs.rmSync('./dist', { recursive: true, force: true })\"",
+		"build": "tsup",
+		"build-storybook": "storybook build",
+		"build:watch": "npm run build -- --watch",
+		"eject-ts": "zx scripts/eject-typescript.js",
+		"postinstall": "node scripts/welcome.js",
+		"format": "prettier --write .",
+		"lint": "eslint --cache .",
+		"lint:fix": "pnpm lint --fix",
+		"prerelease": "zx scripts/prepublish-checks.js",
+		"release": "npm run build && auto shipit",
+		"start": "run-p build:watch \"storybook --quiet\"",
+		"storybook": "storybook dev -p 6006",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"peerDependencies": {
+		"lightningcss": "*",
+		"postcss": "^8.5.6",
+		"postcss-nested": "^7.0.2",
+		"react": ">=18",
+		"react-aria-components": "^1.15.1",
+		"react-dom": ">=18",
+		"storybook": "*"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.36.0",
+		"@storybook/addon-docs": "latest",
+		"@storybook/icons": "^2.0.0",
+		"@storybook/react-vite": "next",
+		"@types/node": "^24.0.0",
+		"@types/react": "^19",
+		"@types/react-dom": "^19",
+		"@vitejs/plugin-react": "^4.7.0",
+		"auto": "^11.3.0",
+		"boxen": "^8.0.1",
+		"eslint": "^9.36.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-prettier": "^5.5.4",
+		"eslint-plugin-react": "^7.37.5",
+		"eslint-plugin-storybook": "latest",
+		"npm-run-all2": "^8.0.4",
+		"postcss": "^8.5.6",
+		"postcss-nested": "*",
+		"prettier": "^3.6.2",
+		"prompts": "^2.4.2",
+		"react": "^19",
+		"react-aria-components": "^1.15.1",
+		"react-dom": "^19",
+		"storybook": "latest",
+		"ts-dedent": "^2.2.0",
+		"tsup": "^8.5.0",
+		"typescript": "^5.8.3",
+		"typescript-eslint": "^8.44.1",
+		"vite": "^7.0.5",
+		"zx": "^8.7.1"
+	},
+	"bundler": {
+		"managerEntries": [
+			"src/manager.tsx",
+			"src/manager-helpers.tsx"
+		],
+		"previewEntries": [
+			"src/preview.ts",
+			"src/index.ts"
+		],
+		"nodeEntries": [
+			"src/constants.ts",
+			"src/preset.ts",
+			"src/utils/Serializables.ts",
+			"src/cssModuleTracker.ts"
+		]
+	},
+	"storybook": {
+		"displayName": "Design Tokens panel",
+		"supportedFrameworks": [
+			"supported-frameworks"
+		],
+		"icon": "https://user-images.githubusercontent.com/321738/63501763-88dbf600-c4cc-11e9-96cd-94adadc2fd72.png"
+	},
+	"volta": {
+		"node": "24.11.0"
+	}
 }

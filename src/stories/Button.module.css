@@ -1,0 +1,32 @@
+.storybook-button {
+  --button-color: red;
+  --button-color-ref: var(--button-color);
+  font-family: var(--cds-typography-typeface-family-sans);
+  font-weight: var(--cds-typography-font-weight-bold);
+  border: 0;
+  border-radius: var(--cds-size-radius-100);
+  cursor: pointer;
+  display: inline-block;
+  line-height: 1;
+}
+.storybook-button--primary {
+  color: var(--cds-color-text-button-primary);
+  background-color: var(--cds-color-background-default-primary);
+}
+.storybook-button--secondary {
+  color: var(--cds-color-text-button-secondary);;
+  background-color: var(--cds-color-background-default-secondary);
+  box-shadow: var(--cds-shadow-container);
+}
+.storybook-button--small {
+  font-size: var(--cds-typography-font-size-scale-01-12);
+  padding: var(--cds-space-inset-xs);
+}
+.storybook-button--medium {
+  font-size: var(--cds-typography-font-size-scale-02-14);
+  padding: var(--cds-space-inset-md)
+}
+.storybook-button--large {
+  font-size: var(--cds-typography-font-size-scale-03-16);
+  padding: var(--cds-space-inset-lg)
+}

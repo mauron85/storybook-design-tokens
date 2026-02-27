@@ -2,20 +2,24 @@ export interface BaseToken {
   name: string;
   value: string;
   category: string;
-  source: 'theme' | 'style-dictionary';
+  source: 'theme' | 'style-dictionary' | 'component';
 }
 
 export interface ParsedToken extends BaseToken {
+  /** Chain of intermediate token references (excluding the final primitive) */
+  referenceChain?: string[];
+  /** The final primitive token name */
   primitiveName?: string;
+  /** The final resolved value */
   primitiveValue?: string;
 }
 
+export type CssDesignTokenMap = Record<string, Record<string, string[]>>;
+
 export interface StoryTokenPayload {
   storyId: string;
-  tokens: ParsedToken[];
   allTokens: ParsedToken[];
-  usedTokenNames: string[];
-  componentCssPath?: string;
+  tokenMap: CssDesignTokenMap;
 }
 
 export interface DesignTokensAddonOptions {
@@ -23,8 +27,6 @@ export interface DesignTokensAddonOptions {
   themeCssPath: string;
   /** Optional public URL to style-dictionary generated JSON tokens */
   styleDictionaryPath?: string;
-  /** Optional path to component module stylesheet; if absent, addon tries to infer from component file */
-  componentCssPath?: string;
   /** Show tokens not used by component by default */
   showUnusedByDefault?: boolean;
 }

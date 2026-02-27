@@ -1,0 +1,18 @@
+[21:23:40.382] [INFO] storybook v10.3.0-alpha.11
+[21:23:46.977] [DEBUG] Getting package.json info for C:/Colonnade/storybook-design-tokens/package.json...
+[21:23:50.814] [DEBUG] Serving static files from [36mpackages/theme[39m at [36m/theme[39m
+[21:23:50.820] [INFO] Starting...
+[21:23:51.668] [ERROR] [38;2;241;97;97mError: Build failed with 1 error:
+node_modules/.cache/storybook/10.3.0-alpha.11/1c3385a5d25e538d10b518b310c74d3ca2690b6aaffeadccd74da79736171f86/sb-manager/2/manager-bundle.js:1:7: ERROR: Could not resolve "C:/Colonnade/storybook-design-tokens/dist/manager.js"[39m
+    at failureErrorWithLog (.\node_modules\esbuild\lib\main.js:1467:15)
+    at .\node_modules\esbuild\lib\main.js:926:25
+    at runOnEndCallbacks (.\node_modules\esbuild\lib\main.js:1307:45)
+    at buildResponseToResult (.\node_modules\esbuild\lib\main.js:924:7)
+    at .\node_modules\esbuild\lib\main.js:951:16
+    at responseCallbacks.<computed> (.\node_modules\esbuild\lib\main.js:603:9)
+    at handleIncomingPacket (.\node_modules\esbuild\lib\main.js:658:12)
+    at Socket.readFromStdout (.\node_modules\esbuild\lib\main.js:581:7)
+    at Socket.emit (node:events:508:28)
+    at addChunk (node:internal/streams/readable:559:12)
+[21:23:51.677] [WARN] Broken build, fix the error above.
+You may need to refresh the browser.

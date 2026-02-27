@@ -34,6 +34,26 @@ const config: StorybookConfig = {
 export default config;
 ```
 
+**For npm link development**, add Vite dedupe configuration:
+
+```ts
+import type { StorybookConfig } from '@storybook/react-vite';
+
+const config: StorybookConfig = {
+  addons: ['storybook-design-tokens-panel/preset'],
+  async viteFinal(conf) {
+    const { mergeConfig } = await import('vite');
+    return mergeConfig(conf, {
+      resolve: {
+        dedupe: ['storybook-design-tokens-panel']
+      }
+    });
+  }
+};
+
+export default config;
+```
+
 `.storybook/preview.ts`
 
 ```ts
@@ -65,3 +85,53 @@ export default {
 };
 ```
 
+## Development
+
+### Local Development with npm link
+
+**Initial Setup:**
+
+```bash
+# In the addon directory
+cd storybook-design-tokens
+npm run build
+npm link
+
+# In your project directory
+cd your-project
+npm link storybook-design-tokens-panel
+```
+
+**Development Workflow (Recommended):**
+
+1. **Start watch mode in the addon** (in separate terminal):
+   ```bash
+   cd storybook-design-tokens
+   npm run dev
+   ```
+   This will automatically rebuild when you change TypeScript files.
+
+2. **Start Storybook** (in another terminal):
+   ```bash
+   cd your-project
+   npm run storybook
+   ```
+
+3. **Make changes** to addon source files in `src/`
+   - TypeScript will automatically compile to `dist/`
+   - **Refresh your browser** to see changes (Ctrl+R / Cmd+R)
+   - No need to restart Storybook for most changes
+
+**Manual rebuild (if needed):**
+
+```bash
+# Rebuild the addon once
+cd storybook-design-tokens
+npm run build
+
+# Then refresh browser or restart Storybook
+cd your-project
+npm run storybook
+```
+
+**Note:** The addon uses a default export with inline functions to prevent duplicate declaration errors when using `npm link`. All helper functions are scoped within the decorator to avoid module-level const conflicts.
