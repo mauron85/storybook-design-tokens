@@ -2,7 +2,8 @@ import { addons } from 'storybook/internal/preview-api';
 import type { DecoratorFunction } from 'storybook/internal/types';
 import { CSS_TOKENS_MAP, EVENTS } from './constants.js';
 import { enrichSemanticReferences, parseStyleDictionaryTokens, parseThemeCss } from './parsers.js';
-import type { BaseToken, DesignTokensAddonOptions, StoryTokenPayload } from './types.js';
+import type { BaseToken, DesignTokensAddonOptions } from './types.js';
+import type { StoryManifest, TokenModule } from './cssModuleTracker/types.js';
 
 // Track highlighted elements and overlays for cleanup
 let highlightedElements: HTMLElement[] = [];
@@ -395,23 +396,35 @@ export default {
         }
       };
 
-      const safeFetchJson = async (path?: string): Promise<Record<string, unknown> | null> => {
+      const safeFetchJson = async <T>(path: string): Promise<T | null> => {
         if (!path) return null;
         try {
           const response = await fetch(path);
           // 404 is expected when style dictionary is not configured
           if (response.status === 404) return null;
           if (!response.ok) throw new Error(`Failed to load ${path}: ${response.status}`);
-          return response.json() as Promise<Record<string, unknown>>;
+          return response.json();
         } catch {
           return null;
         }
       };
 
       void (async () => {
-        const themeCssText = await safeFetchText(options.themeCssPath);
-        const tokenMap = JSON.parse(await safeFetchText(CSS_TOKENS_MAP));
+        const story = context.parameters.fileName;
+        const manifest = await safeFetchJson<StoryManifest>(`/${CSS_TOKENS_MAP}/${story}`);
+        console.log(manifest);
 
+        // Fetch all TokenModules defined in the manifest
+        const modulesTokens = await Promise.all<TokenModule | undefined>(
+          manifest?.components?.flatMap((component) =>
+            component.modules.map((module) =>
+              safeFetchJson<TokenModule | undefined>(`/${CSS_TOKENS_MAP}/${module.id}.json`),
+            ),
+          ),
+        );
+        console.log(modulesTokens);
+
+        const themeCssText = await safeFetchText(options.themeCssPath);
         const themeTokens = parseThemeCss(themeCssText);
 
         let dictionaryTokens: BaseToken[] = [];
@@ -431,12 +444,10 @@ export default {
             })),
           );
 
-          console.log(context.componentId);
-
           const payload: StoryTokenPayload = {
             storyId: context.id,
             allTokens,
-            tokenMap: tokenMap,
+            tokenMap: modulesTokens,
           };
 
           channel.emit(EVENTS.UPDATE, payload);

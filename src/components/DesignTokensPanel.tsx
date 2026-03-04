@@ -440,7 +440,7 @@ const InspectContainer = styled.div({
 interface Props {
   channel: Channel;
   allTokens: ParsedToken[];
-  tokenMap: Record<string, string[]>;
+  tokenMap: CssDesignTokenMap;
 }
 
 type FilterMode = 'story' | 'component' | 'all';
@@ -643,7 +643,35 @@ export function DesignTokensPanel({ allTokens, tokenMap, channel }: Readonly<Pro
     | { type: 'header'; id: string; label: string; count: number; variant: 'component' | 'theme' }
     | { type: 'token'; id: string; token: ParsedToken };
 
-  const usedTokenNames: string[] = Object.keys(tokenMap ?? {});
+  const usedTokenNames = useMemo(() => {
+    const names = new Set<string>();
+    if (!tokenMap?.components) return names;
+
+    const components = tokenMap.components;
+    for (let i = 0; i < components.length; i++) {
+      const componentTokens = components[i].tokens;
+      for (const key in componentTokens) {
+        if (key === 'root') {
+          const rootGroup = componentTokens[key] as Record<string, string>;
+          for (const varName in rootGroup) {
+            const value = rootGroup[varName];
+            // Strip '--' prefix to match allTokens[i].name format
+            if (value.startsWith('--')) {
+              names.add(value.replace(/^--/, ''));
+            }
+          }
+        } else {
+          const propValues = componentTokens[key] as string[];
+          for (let j = 0; j < propValues.length; j++) {
+            // Strip '--' prefix to match allTokens[i].name format
+            names.add(propValues[j].replace(/^--/, ''));
+          }
+        }
+      }
+    }
+    return names;
+  }, [tokenMap]);
+  console.log(usedTokenNames);
 
   const tableItems = useMemo((): TableItem[] => {
     // Filter out private tokens (starting with underscore)
@@ -654,7 +682,7 @@ export function DesignTokensPanel({ allTokens, tokenMap, channel }: Readonly<Pro
     switch (filterMode) {
       case 'story':
         // Show only tokens used in the current story
-        base = publicTokens.filter((token) => usedTokenNames.includes(token.name));
+        base = publicTokens.filter((token) => usedTokenNames.has(token.name));
         break;
       case 'component':
         // Show only component-local tokens
@@ -722,7 +750,7 @@ export function DesignTokensPanel({ allTokens, tokenMap, channel }: Readonly<Pro
   );
 
   const usedCount = useMemo(
-    () => visibleTokens.filter((t) => usedTokenNames.includes(t.name)).length,
+    () => visibleTokens.filter((t) => usedTokenNames.has(t.name)).length,
     [visibleTokens, usedTokenNames],
   );
 
@@ -829,7 +857,7 @@ export function DesignTokensPanel({ allTokens, tokenMap, channel }: Readonly<Pro
 
                 // Render token row
                 const token = item.token;
-                const used = usedTokenNames.includes(token.name);
+                const used = usedTokenNames.has(token.name);
                 const displayValue = token.primitiveValue ?? token.value;
                 const isHighlighted = highlightedToken === token.name;
 

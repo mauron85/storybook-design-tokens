@@ -5,7 +5,7 @@
 
 export const viteFinal = async (config: Record<string, any>) => {
   const { mergeConfig } = await import('vite');
-  const { cssModuleTracker } = await import('./cssModuleTracker.js');
+  const { cssModuleTracker } = await import('./cssModuleTracker/plugin.js');
 
   return mergeConfig(config, {
     plugins: [cssModuleTracker()],

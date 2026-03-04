@@ -1,3 +1,8 @@
+/**
+ * @file types.ts
+ * Type definitions for the CSS Token tracking system.
+ */
+
 export interface BaseToken {
   name: string;
   value: string;
@@ -12,14 +17,6 @@ export interface ParsedToken extends BaseToken {
   primitiveName?: string;
   /** The final resolved value */
   primitiveValue?: string;
-}
-
-export type CssDesignTokenMap = Record<string, Record<string, string[]>>;
-
-export interface StoryTokenPayload {
-  storyId: string;
-  allTokens: ParsedToken[];
-  tokenMap: CssDesignTokenMap;
 }
 
 export interface DesignTokensAddonOptions {

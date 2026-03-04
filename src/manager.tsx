@@ -27,12 +27,7 @@ function PanelContainer({ active }: Readonly<{ active?: boolean }>) {
   const payload = currentStoryId ? tokensByStory[currentStoryId] : undefined;
 
   return (
-    <DesignTokensPanel
-      allTokens={payload?.allTokens ?? []}
-      usedTokenNames={payload?.usedTokenNames ?? []}
-      showUnusedByDefault={false}
-      channel={channel}
-    />
+    <DesignTokensPanel allTokens={payload?.allTokens ?? []} tokenMap={payload?.tokenMap ?? []} channel={channel} />
   );
 }
 

@@ -5,5 +5,7 @@
   "editor.codeActionsOnSave": [
     "source.formatDocument",
     "source.fixAll.eslint"
-  ]
+  ],
+  "prettier.endOfLine": "crlf",
+  "files.eol": "\r\n"
 }
