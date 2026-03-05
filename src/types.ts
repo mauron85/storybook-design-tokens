@@ -3,6 +3,10 @@
  * Type definitions for the CSS Token tracking system.
  */
 
+export interface AddonParams {
+  themeCssPath?: string;
+}
+
 export interface BaseToken {
   name: string;
   value: string;
@@ -17,6 +21,8 @@ export interface ParsedToken extends BaseToken {
   primitiveName?: string;
   /** The final resolved value */
   primitiveValue?: string;
+  /** CSS class names / selectors where this token is used */
+  classNames?: string[];
 }
 
 export interface DesignTokensAddonOptions {
@@ -26,4 +32,12 @@ export interface DesignTokensAddonOptions {
   styleDictionaryPath?: string;
   /** Show tokens not used by component by default */
   showUnusedByDefault?: boolean;
+}
+
+export interface StoryTokenPayload {
+  storyId: string;
+  allTokens: ParsedToken[];
+  tokenMap: any;
+  options?: DesignTokensAddonOptions;
+  storyFileName?: string;
 }

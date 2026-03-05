@@ -30,7 +30,7 @@
 	},
 	"scripts": {
 		"prebuild": "node -e \"fs.rmSync('.tmp/dist', { recursive: true, force: true })\"",
-		"build": "tsup --out-dir .tmp/dist",
+		"build": "tsup --out-dir dist",
 		"build-storybook": "NODE_PRESERVE_SYMLINKS=1 NODE_OPTIONS='--loader ./scripts/ramdisk-loader.mjs' storybook build --output-dir .tmp/storybook-static",
 		"build:watch": "npm run build -- --watch",
 		"eject-ts": "zx scripts/eject-typescript.js",
@@ -41,7 +41,9 @@
 		"prerelease": "zx scripts/prepublish-checks.js",
 		"release": "npm run build && auto shipit",
 		"start": "run-p build:watch \"storybook --no-open --quiet\"",
-		"storybook": "NODE_PRESERVE_SYMLINKS=1 NODE_OPTIONS='--loader ./scripts/ramdisk-loader.mjs' storybook dev -p 6006",
+		"start-ram": "run-p build:watch \"storybook-ram --no-open --quiet\"",
+		"storybook": "storybook dev -p 6006",
+		"storybook-ram": "NODE_PRESERVE_SYMLINKS=1 NODE_OPTIONS='--loader ./scripts/ramdisk-loader.mjs' storybook dev -p 6006",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"files": [
@@ -54,7 +56,6 @@
 		"postcss": "^8.5.6",
 		"postcss-nested": "^7.0.2",
 		"react": ">=18",
-		"react-aria-components": "^1.15.1",
 		"react-dom": ">=18",
 		"storybook": "*"
 	},
@@ -81,7 +82,6 @@
 		"prettier": "^3.6.2",
 		"prompts": "^2.4.2",
 		"react": "^19",
-		"react-aria-components": "^1.15.1",
 		"react-dom": "^19",
 		"semver": "^7.7.4",
 		"storybook": "10.3.0-alpha.12",

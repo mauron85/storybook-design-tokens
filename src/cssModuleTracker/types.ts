@@ -6,6 +6,14 @@
 export type TokenData = Record<string, string | string[]> | Map<string, string | string[]>;
 
 /**
+ * A single token entry with its resolved token and the CSS selector where it appears.
+ */
+export interface TokenEntry {
+  token: string;
+  selector?: string;
+}
+
+/**
  * The TokenModule: Created per .module.css file.
  * Represents a standalone data representation of a CSS module's tokens.
  */
@@ -14,10 +22,16 @@ export interface TokenModule {
   id: string;
   /** The extracted token data */
   tokens: {
-    /** Variables defined in :root or top-level scope */
-    root: Record<string, string>;
-    /** Property-to-Variable mappings (e.g., "color": ["--primary"]) */
-    [cssProperty: string]: string[] | Record<string, string>;
+    /**
+     * Variables defined in the module.
+     * e.g. "--button-color": { token: "red", selector: ".button" }
+     */
+    root: Record<string, TokenEntry>;
+    /**
+     * Property-to-Variable mappings with selector context.
+     * e.g. "color": [{ token: "--cds-color-primary", selector: ".button--primary" }]
+     */
+    [cssProperty: string]: Record<string, TokenEntry>;
   };
 }
 

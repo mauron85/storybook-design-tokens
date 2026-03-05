@@ -1,9 +1,6 @@
 import { addons } from 'storybook/internal/preview-api';
 import type { DecoratorFunction } from 'storybook/internal/types';
-import { CSS_TOKENS_MAP, EVENTS } from './constants.js';
-import { enrichSemanticReferences, parseStyleDictionaryTokens, parseThemeCss } from './parsers.js';
-import type { BaseToken, DesignTokensAddonOptions } from './types.js';
-import type { StoryManifest, TokenModule } from './cssModuleTracker/types.js';
+import { EVENTS } from './constants.js';
 
 // Track highlighted elements and overlays for cleanup
 let highlightedElements: HTMLElement[] = [];
@@ -161,6 +158,30 @@ interface ElementMatch {
   cssSelector: string; // The original CSS selector (may include pseudo-selectors)
 }
 
+// Match elements using known CSS selectors from TokenEntry
+function matchElementsBySelectors(root: Element, selectors: string[]): ElementMatch[] {
+  const matches: ElementMatch[] = [];
+  const seenElements = new Set<HTMLElement>();
+
+  for (const selector of selectors) {
+    const baseSelector = stripPseudoSelectors(selector);
+    const querySelector = baseSelector || selector;
+    try {
+      const elements = root.querySelectorAll(querySelector);
+      elements.forEach((el) => {
+        if (el instanceof HTMLElement && !seenElements.has(el)) {
+          seenElements.add(el);
+          matches.push({ element: el, cssSelector: selector });
+        }
+      });
+    } catch {
+      // Invalid selector, skip
+    }
+  }
+
+  return matches;
+}
+
 // Find elements that use a specific CSS variable
 function findElementsUsingToken(root: Element, tokenName: string): ElementMatch[] {
   const matches: ElementMatch[] = [];
@@ -283,8 +304,8 @@ const clearHighlights = () => {
   overlayElements = [];
 };
 
-const highlightToken = (payload: { tokenName: string; tokenValue?: string }) => {
-  const { tokenName, tokenValue } = payload;
+const highlightToken = (payload: { tokenName: string; tokenValue?: string; selectors?: string[] }) => {
+  const { tokenName, tokenValue, selectors } = payload;
 
   injectBlinkStyles();
   clearHighlights();
@@ -292,8 +313,13 @@ const highlightToken = (payload: { tokenName: string; tokenValue?: string }) => 
   // Find the story root
   const storyRoot = document.querySelector('#storybook-root') ?? document.body;
 
-  // Find elements using this token
-  const matches = findElementsUsingToken(storyRoot, tokenName);
+  // Use selectors from TokenEntry when available, fall back to full DOM scan
+  let matches: ElementMatch[];
+  if (selectors && selectors.length > 0) {
+    matches = matchElementsBySelectors(storyRoot, selectors);
+  } else {
+    matches = findElementsUsingToken(storyRoot, tokenName);
+  }
 
   // Highlight ALL matching elements
   if (matches.length > 0) {
@@ -372,91 +398,14 @@ function registerHighlightListeners() {
 // Export default to avoid duplicate const declarations with npm link
 export default {
   decorators: [
-    ((Story, context) => {
-      const channel = addons.getChannel();
-      const options = (context.parameters.designTokens ?? {}) as DesignTokensAddonOptions;
-
+    ((Story) => {
       // Register highlight listeners once
       registerHighlightListeners();
 
       // Clear any existing highlights when story changes
       clearHighlights();
 
-      const safeFetchText = async (path?: string): Promise<string> => {
-        if (!path) return '';
-        try {
-          const response = await fetch(path);
-          // 404 is expected when component doesn't have a .module.css file
-          if (response.status === 404) return '';
-          if (!response.ok) throw new Error(`Failed to load ${path}: ${response.status}`);
-          return response.text();
-        } catch {
-          // Return empty string on network errors
-          return '';
-        }
-      };
-
-      const safeFetchJson = async <T>(path: string): Promise<T | null> => {
-        if (!path) return null;
-        try {
-          const response = await fetch(path);
-          // 404 is expected when style dictionary is not configured
-          if (response.status === 404) return null;
-          if (!response.ok) throw new Error(`Failed to load ${path}: ${response.status}`);
-          return response.json();
-        } catch {
-          return null;
-        }
-      };
-
-      void (async () => {
-        const story = context.parameters.fileName;
-        const manifest = await safeFetchJson<StoryManifest>(`/${CSS_TOKENS_MAP}/${story}`);
-        console.log(manifest);
-
-        // Fetch all TokenModules defined in the manifest
-        const modulesTokens = await Promise.all<TokenModule | undefined>(
-          manifest?.components?.flatMap((component) =>
-            component.modules.map((module) =>
-              safeFetchJson<TokenModule | undefined>(`/${CSS_TOKENS_MAP}/${module.id}.json`),
-            ),
-          ),
-        );
-        console.log(modulesTokens);
-
-        const themeCssText = await safeFetchText(options.themeCssPath);
-        const themeTokens = parseThemeCss(themeCssText);
-
-        let dictionaryTokens: BaseToken[] = [];
-        const dictionaryJson = await safeFetchJson(options.styleDictionaryPath);
-        if (dictionaryJson) dictionaryTokens = parseStyleDictionaryTokens(dictionaryJson);
-
-        // Wait a frame for the story to render
-        requestAnimationFrame(() => {
-          // Collect all known token names (theme + dictionary + used)
-          const knownTokens = [...themeTokens, ...dictionaryTokens];
-
-          // Update token values with resolved computed values
-          const allTokens = enrichSemanticReferences(
-            knownTokens.map((token) => ({
-              ...token,
-              value: token.value,
-            })),
-          );
-
-          const payload: StoryTokenPayload = {
-            storyId: context.id,
-            allTokens,
-            tokenMap: modulesTokens,
-          };
-
-          channel.emit(EVENTS.UPDATE, payload);
-        });
-      })().catch(() => {
-        // Silently fail - panel will show previous state or "no tokens"
-      });
-
       return Story();
-    }) as DecoratorFunction<any>,
+    }) as DecoratorFunction,
   ],
 };

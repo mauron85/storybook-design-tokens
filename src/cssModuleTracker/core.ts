@@ -1,7 +1,7 @@
 import postcss from 'postcss';
 import { SerializableMap, SerializableSet } from './serializables.js';
 import type { PluginContext } from 'rollup';
-import type { TokenModule } from './types';
+import type { TokenEntry, TokenModule } from './types';
 import type { ViteDevServer } from 'vite';
 
 const CSS_VAR = /var\(\s*(--[a-zA-Z0-9-_]+)\s*(?:,[^)]+)?\)/;
@@ -12,21 +12,31 @@ export const cleanId = (id: string): string => id.split('?')[0].replace(/\\/g, '
 export function parseCssToTokenModule(code: string, relativePath: string): TokenModule {
   const rootNode = postcss.parse(code);
   const tokenMap = new SerializableMap<string, any>();
-  const rootVars = new SerializableMap<string, string>();
+  const rootVars = new SerializableMap<string, TokenEntry>();
   tokenMap.set('root', rootVars);
 
   rootNode.walkDecls((decl) => {
     const { prop, value } = decl;
     const cleanValue = value.trim();
 
+    // Determine the selector from the parent rule (e.g. ".button", ".header--large")
+    const selector = decl.parent && 'selector' in decl.parent ? (decl.parent as postcss.Rule).selector : undefined;
+
     if (prop.startsWith('--')) {
       const match = CSS_VAR.exec(cleanValue);
-      rootVars.set(prop, match?.[1] ?? cleanValue);
+      rootVars.set(prop, {
+        token: match?.[1] ?? cleanValue,
+        ...(selector && { selector }),
+      });
     } else {
       for (const match of cleanValue.matchAll(CSS_VAR_GLOBAL)) {
         if (match[1]) {
-          if (!tokenMap.has(prop)) tokenMap.set(prop, new SerializableSet<string>());
-          tokenMap.get(prop).add(match[1]);
+          if (!tokenMap.has(prop)) tokenMap.set(prop, []);
+          const arr = tokenMap.get(prop) as TokenEntry[];
+          // Avoid duplicates (same variable + same selector)
+          if (!arr.some((e) => e.token === match[1] && e.selector === selector)) {
+            arr.push({ token: match[1], ...(selector && { selector }) });
+          }
         }
       }
     }
